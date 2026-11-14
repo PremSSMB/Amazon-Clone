@@ -65,12 +65,26 @@ if (
     };
 
 
-    // 3. Create an empty shopping cart.
+    // 3. Search keywords for each category.
+
+    const categoryKeywords = {
+        clothing: "clothing clothes fabric fabrics shirts jackets apparel",
+        care: "care personal skincare soap lotion wellness health medical groceries",
+        home: "home furniture decoration decor living sofa chair lamp",
+        beauty: "beauty makeup cosmetics lipstick brushes",
+        electronics: "electronics technology computer laptop headphones gadgets",
+        pets: "pets pet food dog cat animals supplies",
+        toys: "toys games blocks building kids play",
+        fashion: "fashion trends bags shoes accessories style"
+    };
+
+
+    // 4. Create an empty shopping cart.
 
     const cart = [];
 
 
-    // 4. Format prices as US dollars.
+    // 5. Format prices as US dollars.
 
     function formatPrice(amount) {
         return new Intl.NumberFormat("en-US", {
@@ -80,7 +94,7 @@ if (
     }
 
 
-    // 5. Protect HTML when displaying text.
+    // 6. Protect text before inserting it into HTML.
 
     function escapeHTML(value) {
         return String(value).replace(/[&<>"']/g, function (character) {
@@ -97,7 +111,7 @@ if (
     }
 
 
-    // 6. Open the pop-up window.
+    // 7. Open the pop-up window.
 
     function openDialog(title, bodyHTML, actionsHTML = "") {
 
@@ -111,14 +125,14 @@ if (
     }
 
 
-    // 7. Display a message below the shopping categories.
+    // 8. Display a message below the categories.
 
     function showStatus(message) {
         statusMessage.textContent = message;
     }
 
 
-    // 8. Filter categories.
+    // 9. Filter shopping categories.
 
     function filterCategories(category = "all", searchTerm = "") {
 
@@ -133,13 +147,17 @@ if (
             const cardTitle = card.querySelector("h2")
                 .textContent.toLowerCase();
 
+            const keywords = categoryKeywords[cardCategory] || "";
+
             const matchesCategory =
                 category === "all" || cardCategory === category;
 
+            const searchableText =
+                `${cardTitle} ${cardCategory} ${keywords}`;
+
             const matchesSearch =
                 normalizedTerm === "" ||
-                cardTitle.includes(normalizedTerm) ||
-                cardCategory.includes(normalizedTerm);
+                searchableText.includes(normalizedTerm);
 
             const shouldShow = matchesCategory && matchesSearch;
 
@@ -148,6 +166,7 @@ if (
             if (shouldShow) {
                 visibleCount++;
             }
+
         });
 
         if (visibleCount === 0) {
@@ -156,11 +175,9 @@ if (
 
         } else if (normalizedTerm || category !== "all") {
 
-            showStatus(
-                `Showing ${visibleCount} ${
-                    visibleCount === 1 ? "category" : "categories"
-                }.`
-            );
+            showStatus(`Showing ${visibleCount} ${
+                visibleCount === 1 ? "category" : "categories"
+            }.`);
 
         } else {
 
@@ -171,25 +188,23 @@ if (
     }
 
 
-    // 9. Search functionality.
+    // 10. Search functionality.
 
     searchForm.addEventListener("submit", function (event) {
 
         event.preventDefault();
 
-        const selectedCategory = searchCategory.value;
-        const searchTerm = searchInput.value;
-
-        filterCategories(selectedCategory, searchTerm);
+        filterCategories(searchCategory.value, searchInput.value);
 
         shopSection.scrollIntoView({
             behavior: "smooth",
             block: "start"
         });
+
     });
 
 
-    // 10. Update the cart number.
+    // 11. Update the cart number.
 
     function updateCartCount() {
 
@@ -201,7 +216,7 @@ if (
     }
 
 
-    // 11. Add products to the cart.
+    // 12. Add products to the cart.
 
     function addToCart(category) {
 
@@ -246,7 +261,7 @@ if (
     }
 
 
-    // 12. Display the shopping cart.
+    // 13. Display the shopping cart.
 
     function showCart() {
 
@@ -302,6 +317,7 @@ if (
         itemsHTML += `
             </div>
             <p><strong>Demo total: ${formatPrice(total)}</strong></p>
+            <p><small>This is a practice cart. No purchase or payment will be made.</small></p>
         `;
 
         openDialog(
@@ -315,7 +331,7 @@ if (
     }
 
 
-    // 13. Open a category when Shop More is clicked.
+    // 14. Explore a category.
 
     function exploreCategory(category) {
 
@@ -325,14 +341,12 @@ if (
             `.box[data-category="${category}"]`
         );
 
-        const categoryName = card
-            ? card.querySelector("h2").textContent
-            : "Shopping";
-
-        if (!product) {
+        if (!product || !card) {
             showStatus("This category is not available.");
             return;
         }
+
+        const categoryName = card.querySelector("h2").textContent;
 
         openDialog(
             categoryName,
@@ -352,11 +366,11 @@ if (
     }
 
 
-    // 14. Handle clicks on buttons across the page.
+    // 15. Handle clicks on the page.
 
     document.addEventListener("click", function (event) {
 
-        // Category navigation buttons.
+        // Navigation category filters.
 
         const filterButton = event.target.closest("[data-filter]");
 
@@ -378,7 +392,7 @@ if (
         }
 
 
-        // Buttons with a data-action attribute.
+        // Buttons with data-action.
 
         const actionButton = event.target.closest("[data-action]");
 
@@ -406,7 +420,7 @@ if (
                     currentLocation
                 );
 
-                if (newLocation && newLocation.trim()) {
+                if (newLocation && newLocation.trim() && addressElement) {
 
                     addressElement.textContent = newLocation.trim();
 
@@ -425,8 +439,7 @@ if (
 
                 openDialog(
                     "Account & Lists",
-
-                    "<p>This is a student shopping demo. Real Amazon sign-in is not connected, and this page does not collect or send passwords.</p>"
+                    "<p>This is a student shopping demo. Real Amazon sign-in is not connected. Do not enter a real password or sensitive information.</p>"
                 );
 
                 break;
@@ -438,14 +451,13 @@ if (
 
                 openDialog(
                     "Returns & Orders",
-
-                    "<p>You do not have any demo orders yet. Add a sample item to your cart to try the shopping features.</p>"
+                    "<p>You do not have any demo orders yet. This project does not connect to real orders or returns.</p>"
                 );
 
                 break;
 
 
-            // Open shopping cart.
+            // Shopping cart.
 
             case "cart":
 
@@ -454,7 +466,7 @@ if (
                 break;
 
 
-            // Explore a shopping category.
+            // Explore category.
 
             case "explore":
 
@@ -463,7 +475,7 @@ if (
                 break;
 
 
-            // Add a product to the cart.
+            // Add product.
 
             case "add-to-cart":
 
@@ -472,7 +484,7 @@ if (
                 break;
 
 
-            // Close the pop-up.
+            // Close pop-up.
 
             case "close-dialog":
 
@@ -481,13 +493,13 @@ if (
                 break;
 
 
-            // Increase product quantity.
+            // Increase quantity.
 
             case "increase-cart-item": {
 
                 const index = Number(actionButton.dataset.index);
 
-                if (cart[index]) {
+                if (Number.isInteger(index) && cart[index]) {
 
                     cart[index].quantity++;
 
@@ -500,13 +512,13 @@ if (
             }
 
 
-            // Decrease product quantity.
+            // Decrease quantity.
 
             case "decrease-cart-item": {
 
                 const index = Number(actionButton.dataset.index);
 
-                if (cart[index]) {
+                if (Number.isInteger(index) && cart[index]) {
 
                     cart[index].quantity--;
 
@@ -523,13 +535,13 @@ if (
             }
 
 
-            // Remove a product from the cart.
+            // Remove an item.
 
             case "remove-cart-item": {
 
                 const index = Number(actionButton.dataset.index);
 
-                if (cart[index]) {
+                if (Number.isInteger(index) && cart[index]) {
 
                     cart.splice(index, 1);
 
@@ -542,7 +554,7 @@ if (
             }
 
 
-            // Empty the entire cart.
+            // Clear cart.
 
             case "clear-cart":
 
@@ -555,7 +567,7 @@ if (
                 break;
 
 
-            // Scroll back to the top.
+            // Back to top.
 
             case "back-to-top":
 
@@ -575,7 +587,6 @@ if (
                     "Choose a Language",
 
                     `<label for="language-choice">Select a demo language:</label>
-
                      <select id="language-choice">
                         <option>English</option>
                         <option>Spanish</option>
@@ -588,7 +599,7 @@ if (
                 break;
 
 
-            // Apply language selection.
+            // Apply language.
 
             case "apply-language": {
 
@@ -599,9 +610,7 @@ if (
                 );
 
                 if (choice && languageButton) {
-
-                    languageButton.textContent =
-                        `Language: ${choice.value}`;
+                    languageButton.textContent = `Language: ${choice.value}`;
                 }
 
                 siteDialog.close();
@@ -618,7 +627,6 @@ if (
                     "Choose a Country",
 
                     `<label for="country-choice">Select a demo country:</label>
-
                      <select id="country-choice">
                         <option>United States</option>
                         <option>Canada</option>
@@ -632,7 +640,7 @@ if (
                 break;
 
 
-            // Apply country selection.
+            // Apply country.
 
             case "apply-country": {
 
@@ -643,7 +651,6 @@ if (
                 );
 
                 if (choice && countryButton) {
-
                     countryButton.textContent = choice.value;
                 }
 
@@ -657,7 +664,7 @@ if (
     });
 
 
-    // 15. Close the pop-up when clicking outside its content.
+    // 16. Close pop-up when clicking outside the box.
 
     siteDialog.addEventListener("click", function (event) {
 
@@ -668,8 +675,9 @@ if (
     });
 
 
-    // 16. Set the cart count to zero when the page loads.
+    // 17. Set cart count when the page loads.
 
     updateCartCount();
 
 }
+
